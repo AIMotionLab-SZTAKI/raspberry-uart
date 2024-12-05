@@ -10,6 +10,7 @@ class CommState(Enum):
 class ServiceType(Enum):
     CONTROL = 1
     TRAJECTORY = 2
+    FORWARD_CONTROL = 3
 
 
 class ControlFlag(Enum):

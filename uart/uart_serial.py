@@ -8,8 +8,12 @@ from utils.util import CommState, ServiceType, ErrorFlag, ControlFlag, current_m
 from utils.config import *
 from packet_handlers.control_packet_handler import ControlPacketHandler
 from packet_handlers.trajectory_packet_handler import TrajectoryPacketHandler
+from packet_handlers.forward_packet_handler import ForwardPacketHandler
 from controllers.pid_control import PidControl
 from ctypes import sizeof
+from multiprocessing import shared_memory
+import numpy as np
+import time
 
 
 class UARTCommunication:
@@ -40,8 +44,9 @@ class UARTCommunication:
         self.controller = PidControl()
 
 
-    def communicate(self):
-
+    def communicate(self, shm_name, lock):
+        self.shm = shared_memory.SharedMemory(name=shm_name)
+        self.lock = lock
         try:
             while self.shutdown_transport is False:
 
@@ -310,6 +315,10 @@ class UARTCommunication:
                 print('Service type: TRAJECTORY')
                 TrajectoryPacketHandler.packet_decomposition(data, payloadLength)
 
+            elif service_type == ServiceType.FORWARD_CONTROL.value:
+                print('Service type: FORWARD_CONTROL')
+                ForwardPacketHandler.packet_decomposition(data, payloadLength)
+
             else:
                 print("Service type unknown.")
                 self.reset_communication()
@@ -329,6 +338,14 @@ class UARTCommunication:
 
                 elif service_type == ServiceType.TRAJECTORY.value:
                     data = TrajectoryPacketHandler.packet_composition(88.88, 99.99) ## creates dummy data and sends it back
+
+                elif service_type == ServiceType.FORWARD_CONTROL.value:
+                    data_in = np.zeros(5)
+                    time.sleep(0.0001)
+                    with self.lock:
+                        shared_array = np.ndarray((5, ), dtype=np.float64, buffer=self.shm.buf)
+                        np.copyto(data_in, shared_array)
+                    data = ForwardPacketHandler.packet_composition(data_in)
                 
                 self._send_packet(data, service_type)
 
