@@ -87,7 +87,7 @@ class ControlPacketHandler(PacketHandlerInterface):
             acc
         )
 
-        DEBUG_PRINT_CONTROL(thrust, state)
+        # DEBUG_PRINT_CONTROL(thrust, state)
 
         return (thrust, state)
     

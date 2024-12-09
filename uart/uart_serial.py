@@ -45,8 +45,9 @@ class UARTCommunication:
 
 
     def communicate(self, shm_name, lock):
-        self.shm = shared_memory.SharedMemory(name=shm_name)
-        self.lock = lock
+        if shm_name is not None:
+            self.shm = shared_memory.SharedMemory(name=shm_name)
+            self.lock = lock
         try:
             while self.shutdown_transport is False:
 
@@ -56,13 +57,13 @@ class UARTCommunication:
                 while self.comm_state == CommState.COMM:
 
                     start_time = current_milli_time()
-                    print(f'\n{SEPARATOR}')
+                    # print(f'\n{SEPARATOR}')
 
                     ## Read the first byte of the packet
                     start = self.ser.read(1)
 
                     if start == ControlFlag.START.value:
-                        print(f'Start: {start.hex()}')
+                        # print(f'Start: {start.hex()}')
 
                         ## Read service type and check if its correct
                         try:
@@ -80,8 +81,8 @@ class UARTCommunication:
                         self._handle_packet(payloadLength, service_type)
 
                                        
-                        print(f'\nTransaction time in ms: {current_milli_time() - start_time}')
-                        print(f'{SEPARATOR}\n')
+                        # print(f'\nTransaction time in ms: {current_milli_time() - start_time}')
+                        # print(f'{SEPARATOR}\n')
                         
                     else:
                         self.reset_communication()
@@ -223,7 +224,7 @@ class UARTCommunication:
 
         calculated_crc = self._calc_crc(data)
         
-        print(f'CRC {crc_value} - {calculated_crc} Calculated CRC')
+        # print(f'CRC {crc_value} - {calculated_crc} Calculated CRC')
         return calculated_crc == crc_value 
 
 
@@ -260,7 +261,8 @@ class UARTCommunication:
             self.reset_communication() 
             print(f'An error occured during communication: {flag.name}')
         else:
-            print(f'COMM [{flag.name}]')
+            pass
+            # print(f'COMM [{flag.name}]')
 
 
 
@@ -272,8 +274,8 @@ class UARTCommunication:
             self.reset_communication()
         
         packet = create_uart_packet(len(data))  ## This functions creates a UARTPacket object with a payload size of len(data)
-        print('Packet size: ', sizeof(packet))
-        print('Payload size: ', sizeof(packet.payload))
+        # print('Packet size: ', sizeof(packet))
+        # print('Payload size: ', sizeof(packet.payload))
         packet.start = 0xFF
         packet.serviceType = service_type
         packet.payloadLength = len(data)
@@ -282,14 +284,14 @@ class UARTCommunication:
             packet.payload[i] = byte
 
         packet.crc = self._calc_crc(data)
-        print("Sending bytes...")
+        # print("Sending bytes...")
         
         self.ser.write(packet)
 
 
     def _handle_packet(self, payloadLength: int, service_type: int) -> Optional[Tuple[float, State_t]]:
 
-        print(f'Useful payload length in bytes: {payloadLength}')
+        # print(f'Useful payload length in bytes: {payloadLength}')
 
         data = self.ser.read(payloadLength)
         
@@ -298,7 +300,7 @@ class UARTCommunication:
         if len(data) == payloadLength:
             
             if service_type == ServiceType.CONTROL.value:    
-                print('Service type: CONTROL')
+                # print('Service type: CONTROL')
 
                 _, state = ControlPacketHandler.packet_decomposition(data, payloadLength)
                 setpoint = Setpoint_t(Attitude_t(0, 0, 0, 0),
@@ -316,7 +318,7 @@ class UARTCommunication:
                 TrajectoryPacketHandler.packet_decomposition(data, payloadLength)
 
             elif service_type == ServiceType.FORWARD_CONTROL.value:
-                print('Service type: FORWARD_CONTROL')
+                # print('Service type: FORWARD_CONTROL')
                 ForwardPacketHandler.packet_decomposition(data, payloadLength)
 
             else:

@@ -7,5 +7,5 @@ if __name__ == "__main__":
     # SERIAL_URI and BAUD_RATE can be modified in utils/config.py
     
     comm = UARTCommunication(SERIAL_URI, BAUD_RATE)
-    comm.communicate()
+    comm.communicate(None, None)
     comm.close_commmunication()

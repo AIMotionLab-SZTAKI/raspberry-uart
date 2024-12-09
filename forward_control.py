@@ -28,7 +28,7 @@ if __name__ == "__main__":
         while True:
             rec = receiver.receive()
             if rec is not None:
-                # print(rec)
+                # print(np.array(rec))
                 np.copyto(shared_array, np.array(rec))
                 time.sleep(0.0001)
 
