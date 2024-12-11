@@ -18,9 +18,8 @@ if __name__ == "__main__":
     lock = Lock()
     
     uart = UARTCommunication(SERIAL_URI, BAUD_RATE)  # two-way UART communication with Crazyflie
-    uart_process = Process(target=uart.communicate, args=(shm.name, lock))
-    # TODO: close_commmunication()
-        
+    uart_process = Process(target=uart.communicate, args=(shm.name, lock), daemon=True)
+
     receiver = RadioReciever(devid=0)  # receiving radio messages from PC
     
     try:
@@ -36,3 +35,4 @@ if __name__ == "__main__":
         print(f"Exception: {exc!r}. TRACEBACK:\n")
         print(traceback.format_exc())
         receiver.radio.close()
+        uart.close_commmunication()
