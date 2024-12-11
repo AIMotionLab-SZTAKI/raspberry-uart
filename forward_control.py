@@ -34,5 +34,6 @@ if __name__ == "__main__":
     except Exception as exc:
         print(f"Exception: {exc!r}. TRACEBACK:\n")
         print(traceback.format_exc())
-        receiver.radio.close()
+        receiver.close()
         uart.close_commmunication()
+        shm.unlink()
