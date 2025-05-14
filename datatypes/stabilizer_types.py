@@ -217,6 +217,14 @@ class State_t(Structure):
         ("acc", Acc_t)
     ]
 
+class FullState(Structure):
+    _fields_ = [
+        ("pos", Point_t),
+        ("vel", Point_t),
+        ("attitude", Point_t),
+        ("attitude_rate", Point_t)
+    ]
+
 
 
 class Setpoint_t(Structure):

@@ -10,14 +10,12 @@ from packet_handlers.control_packet_handler import ControlPacketHandler
 from packet_handlers.trajectory_packet_handler import TrajectoryPacketHandler
 from packet_handlers.forward_packet_handler import ForwardPacketHandler
 from packet_handlers.koopman_packet_handler import KoopmanPacketHandler
-from controllers.koopman_control_crazyflie.python.controller.koopman_controller import KoopmanController
-from controllers.koopman_control_crazyflie.python.controller.utils import scalar_first_quaternion_to_rotation_matrix, matrix_to_intrinsic_xyz, interpolate_setpoints
+from controllers.pid_control import PidControl
 from ctypes import sizeof
 from multiprocessing import shared_memory
 import numpy as np
 import time
-import os
-from controllers.pid_control import PidControl
+
 
 class UARTCommunication:
     """
@@ -44,26 +42,17 @@ class UARTCommunication:
         self.ser: serial.Serial = self._open_serial_connection(serial_port, baudrate)
         self.comm_state: CommState = CommState.SYNC
         self.shutdown_transport: bool = False
-        self.controller = KoopmanController()
-        (head, tail) = os.path.split(os.path.dirname(os.path.abspath(__file__)))
-        # setpoints is one folder up in trajectory.csv, loaded with np.loadtxt
-        # folder which is one up from the current file
-        self.setpoints_w_time = np.loadtxt(os.path.join(head, 'trajectory.csv'), delimiter=',')
-        self.initial_time_milliseconds = 0
-        self.setpoint_to_check = []
-        self.controller_pid = PidControl()
+        self.controller = PidControl()
+
 
     def communicate(self):
         # self.shm = shared_memory.SharedMemory(name=shm_name)
         # self.lock = lock
-
         try:
             while self.shutdown_transport is False:
+
                 if self.comm_state == CommState.SYNC:
                     self._synchronize()
-
-                if self.initial_time_milliseconds == 0:
-                    self.initial_time_milliseconds = time.monotonic_ns() / 1_000_000_000
                 
                 while self.comm_state == CommState.COMM:
 
@@ -102,9 +91,6 @@ class UARTCommunication:
         except Exception as e:
             print(f'Error reading from serial port: {e}')
             traceback.print_exc()
-
-        except KeyboardInterrupt:
-            print("Exiting serial read.")
 
 
 
@@ -307,12 +293,6 @@ class UARTCommunication:
         print(f'Useful payload length in bytes: {payloadLength}')
 
         data = self.ser.read(payloadLength)
-
-        cur_time = time.monotonic_ns() / 1_000_000_000
-        setpoint = interpolate_setpoints(self.setpoints_w_time, cur_time-self.initial_time_milliseconds)
-        # setpoint = np.hstack([setpoint[0:3], np.zeros(9)])
-        # setpoint = np.zeros(12)
-        # setpoint[2] = 0.4
         
         ## Check if the read data has the same length as expected
         ## If its not then a timeout
@@ -322,15 +302,16 @@ class UARTCommunication:
                 print('Service type: CONTROL')
 
                 _, state = ControlPacketHandler.packet_decomposition(data, payloadLength)
-                setpoint_pid = Setpoint_t(Attitude_t(0, setpoint[6], setpoint[7], setpoint[8]),
-                                      Attitude_t(0, setpoint[9], setpoint[10], setpoint[11]),
+                setpoint = Setpoint_t(Attitude_t(0, 0, 0, 0),
+                                      Attitude_t(0, 0, 0, 0),
                                       Quaternion_t(Q(0, 0, 0, 1), X(0, 0, 0, 1)),
                                       0,
-                                      Point_t(0, setpoint[0], setpoint[1], setpoint[2]),
-                                      Velocity_t(0, setpoint[3], setpoint[4], setpoint[5]),
+                                      Point_t(0, 0, 0, 0.3),
+                                      Velocity_t(0, 0, 0, 0),
                                       Acc_t(0, 0, 0, 0))
 
-                thrust, attitude_rate = self.controller_pid.position_controller(setpoint_pid, state)               
+                thrust, attitude_rate = self.controller.position_controller(setpoint, state)
+                print(thrust)
 
             elif service_type == ServiceType.TRAJECTORY.value:
                 print('Service type: TRAJECTORY')
@@ -342,10 +323,17 @@ class UARTCommunication:
 
             elif service_type == ServiceType.CONTROL_KOOPMAN.value:
                 print('Service type: CONTROL_KOOPMAN')
-                state = KoopmanPacketHandler.packet_decomposition(data, payloadLength)
-                self.setpoint_to_check.append(state)
+                _, state = KoopmanPacketHandler.packet_decomposition(data, payloadLength)
+                #setpoint = eval_traj(t)
+                # setpoint = Setpoint_t(Attitude_t(0, 0, 0, 0),
+                #                       Attitude_t(0, 0, 0, 0),
+                #                       Quaternion_t(Q(0, 0, 0, 1), X(0, 0, 0, 1)),
+                #                       0,
+                #                       Point_t(0, 0, 0, 0.3),
+                #                       Velocity_t(0, 0, 0, 0),
+                #                       Acc_t(0, 0, 0, 0))
 
-                control_input = self.controller.compute_control(state, setpoint)   
+                thrust, attitude_rate = self.controller.position_controller(setpoint, state)   
 
             else:
                 print("Service type unknown.")
@@ -374,13 +362,6 @@ class UARTCommunication:
                         shared_array = np.ndarray((5, ), dtype=np.float64, buffer=self.shm.buf)
                         np.copyto(data_in, shared_array)
                     data = ForwardPacketHandler.packet_composition(data_in)
-
-                elif service_type == ServiceType.CONTROL_KOOPMAN.value:
-                    thrust = control_input[0]
-                    torque_x = control_input[1]
-                    torque_y = control_input[2]
-                    torque_z = control_input[3]
-                    data = KoopmanPacketHandler.packet_composition(thrust, torque_x, torque_y, torque_z)
                 
                 self._send_packet(data, service_type)
 

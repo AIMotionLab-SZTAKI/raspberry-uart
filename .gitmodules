@@ -1,0 +1,9 @@
+[submodule "koopman-control-crazyflie"]
+	path = koopman-control-crazyflie
+	url = https://github.com/AIMotionLab-SZTAKI/koopman-control-crazyflie.git
+[submodule "controllers/koopman-control-crazyflie"]
+	path = controllers/koopman-control-crazyflie
+	url = https://github.com/AIMotionLab-SZTAKI/koopman-control-crazyflie.git
+[submodule "controllers/koopman_control_crazyflie"]
+	path = controllers/koopman_control_crazyflie
+	url = https://github.com/AIMotionLab-SZTAKI/koopman-control-crazyflie.git

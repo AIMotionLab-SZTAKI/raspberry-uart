@@ -11,6 +11,7 @@ class ServiceType(Enum):
     CONTROL = 1
     TRAJECTORY = 2
     FORWARD_CONTROL = 3
+    CONTROL_KOOPMAN = 4
 
 
 class ControlFlag(Enum):
