@@ -1,7 +1,7 @@
 from uart.uart_serial import UARTCommunication
 from utils.config import SERIAL_URI, BAUD_RATE
 from utils.util import ControlFlag
-from crazyradio import RadioReciever
+from crazyradio import RadioReciever, Crazyradio
 from multiprocessing import shared_memory, Lock, Process
 import numpy as np
 import traceback
@@ -20,7 +20,7 @@ if __name__ == "__main__":
     uart = UARTCommunication(SERIAL_URI, BAUD_RATE)  # two-way UART communication with Crazyflie
     uart_process = Process(target=uart.communicate, args=(shm.name, lock), daemon=True)
 
-    receiver = RadioReciever(devid=0)  # receiving radio messages from PC
+    receiver = RadioReciever(devid=0, data_rate=Crazyradio.DR_2MPS)  # receiving radio messages from PC
     
     try:
         uart_process.start()
