@@ -342,10 +342,10 @@ class UARTCommunication:
                     data = TrajectoryPacketHandler.packet_composition(88.88, 99.99) ## creates dummy data and sends it back
 
                 elif service_type == ServiceType.FORWARD_CONTROL.value:
-                    data_in = np.zeros(5)
+                    data_in = np.zeros(ForwardPacketHandler.packet_size)
                     time.sleep(0.0001)
                     with self.lock:
-                        shared_array = np.ndarray((5, ), dtype=np.float64, buffer=self.shm.buf)
+                        shared_array = np.ndarray((ForwardPacketHandler.packet_size, ), dtype=np.float64, buffer=self.shm.buf)
                         np.copyto(data_in, shared_array)
                     data = ForwardPacketHandler.packet_composition(data_in)
                 

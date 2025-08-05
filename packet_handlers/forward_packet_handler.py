@@ -4,6 +4,7 @@ from typing import List, Optional
 
 
 class ForwardPacketHandler(PacketHandlerInterface):
+    packet_size = 7
 
     @staticmethod
     def packet_decomposition(data: bytes, payload_length: int) -> Optional[List[float]]:
@@ -13,6 +14,6 @@ class ForwardPacketHandler(PacketHandlerInterface):
 
     @staticmethod
     def packet_composition(data_in):
-        data = struct.pack('<fffff', *data_in)
+        data = struct.pack('<' + ForwardPacketHandler.packet_size * 'f', *data_in)
         return data
     

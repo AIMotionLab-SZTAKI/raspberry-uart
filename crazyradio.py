@@ -320,13 +320,13 @@ class RadioReciever:
         self.radio.set_mode(mode)
         # make sure radio gets released before the program quits
 
-    def receive(self):
-        buffer = array.array("f", [0.0, 0.0, 0.0, 0.0, 0.0])
+    def receive(self, size):
+        buffer = array.array("f", size * [0.0])
         # radio.receive can return the following:
         # - None, if an exception occurred
         # - An array.array object, if we passed to it an int of the bytes that should be read
         # - An int, signaling how many bytes were read, if we passed to it a buffer array (where it writes what it read)
-        rec = self.radio.receive(buffer)  # in our case, we expect an array of 4 floats, so we pass a buffer
+        rec = self.radio.receive(buffer)  # in our case, we expect an array of 7 floats, so we pass a buffer
         # print(rec)
         # return None
         if isinstance(rec, int) and rec == buffer.itemsize * len(buffer):
