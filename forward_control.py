@@ -7,7 +7,7 @@ from multiprocessing import shared_memory, Lock, Process
 import numpy as np
 import traceback
 import time
-
+import os
 
 if __name__ == "__main__":
     # SERIAL_URI and BAUD_RATE can be modified in utils/config.py
@@ -15,6 +15,11 @@ if __name__ == "__main__":
     shm = shared_memory.SharedMemory(create=True, size=ForwardPacketHandler.packet_size * np.dtype(np.float64).itemsize)
     shared_array = np.ndarray((ForwardPacketHandler.packet_size,), dtype=np.float64, buffer=shm.buf)
     shared_array.fill(0)
+
+    # prepare pwm log file
+    logfile = os.path.join(os.path.dirname(__file__), "pwm_log.jsonl")
+    # clear file at startup
+    open(logfile, "w").close()
     
     lock = Lock()
     
