@@ -26,7 +26,7 @@ if __name__ == "__main__":
     uart = UARTCommunication(SERIAL_URI, BAUD_RATE)  # two-way UART communication with Crazyflie
     uart_process = Process(target=uart.communicate, args=(shm.name, lock), daemon=True)
 
-    receiver = RadioReciever(devid=0, data_rate=Crazyradio.DR_2MPS)  # receiving radio messages from PC
+    receiver = RadioReciever(devid=0, channel=90, data_rate=Crazyradio.DR_2MPS)  # receiving radio messages from PC
     
     try:
         uart_process.start()

@@ -42,6 +42,8 @@ class UARTCommunication:
         self.comm_state: CommState = CommState.SYNC
         self.shutdown_transport: bool = False
         self.controller = PidControl()
+        # self.counter = 0  # Test communication timeout
+        self.max_reaction_time = 0.018 # a bit less then the raspberry timeout
 
 
     def communicate(self, shm_name, lock):
@@ -56,7 +58,7 @@ class UARTCommunication:
                 
                 while self.comm_state == CommState.COMM:
 
-                    start_time = current_milli_time()
+                    start_time = time.time()
                     # print(f'\n{SEPARATOR}')
 
                     ## Read the first byte of the packet
@@ -78,7 +80,7 @@ class UARTCommunication:
                         
 
                     if self.comm_state == CommState.COMM and payloadLength > 0:
-                        self._handle_packet(payloadLength, service_type)
+                        self._handle_packet(payloadLength, service_type, start_time)
 
                                        
                         # print(f'\nTransaction time in ms: {current_milli_time() - start_time}')
@@ -130,9 +132,10 @@ class UARTCommunication:
         self.ser.reset_output_buffer()
 
         print("Waiting for sync bytes...")
+        time.sleep(0.005)  # Give the Bolt enough time to switch into sync mode (maybe could be increased)
         
         sync_buffer = self.ser.read(1)
-        print(f'Sync byte: {sync_buffer.hex()}')
+        print(f'Sync byte: {sync_buffer.hex()} at {time.time()}')
 
         if sync_buffer == ControlFlag.SYNC_OK.value:
             self.comm_state = CommState.COMM
@@ -289,10 +292,7 @@ class UARTCommunication:
         self.ser.write(packet)
 
 
-    def _handle_packet(self, payloadLength: int, service_type: int) -> Optional[Tuple[float, State_t]]:
-
-        # print(f'Useful payload length in bytes: {payloadLength}')
-
+    def _handle_packet(self, payloadLength: int, service_type: int, start_time) -> Optional[Tuple[float, State_t]]:
         data = self.ser.read(payloadLength)
         
         ## Check if the read data has the same length as expected
@@ -342,14 +342,24 @@ class UARTCommunication:
                     data = TrajectoryPacketHandler.packet_composition(88.88, 99.99) ## creates dummy data and sends it back
 
                 elif service_type == ServiceType.FORWARD_CONTROL.value:
+                    ### Test communication timeout
+                    # self.counter += 1
+                    # if 500 < self.counter <= 510:
+                    #     time.sleep(0.022)
+                    ###
+
                     data_in = np.zeros(ForwardPacketHandler.packet_size)
                     time.sleep(0.0001)
                     with self.lock:
                         shared_array = np.ndarray((ForwardPacketHandler.packet_size, ), dtype=np.float64, buffer=self.shm.buf)
                         np.copyto(data_in, shared_array)
                     data = ForwardPacketHandler.packet_composition(data_in)
-                
-                self._send_packet(data, service_type)
+
+                if time.time() - start_time < self.max_reaction_time:
+                    self._send_packet(data, service_type)
+                else:
+                    print(f"Ran out of time at {time.time()}")
+                    self.reset_communication()
 
             else:
                 self._send_flag(ErrorFlag.BAD_CRC) ## If the CRC is incorrect send a BAD_CRC back
