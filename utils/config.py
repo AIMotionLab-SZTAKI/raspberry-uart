@@ -4,6 +4,8 @@ from typing import Optional
 ## Constrans for the serial interface
 SERIAL_URI: str = '/dev/ttyAMA0'
 BAUD_RATE: int = 921600
+CPU_CORE_UART = 3
+RT_PRIORITY = 90
 
 READ_TIMEOUT: Optional[float] = 0.1
 WRITE_TIMEOUT: Optional[float] = None

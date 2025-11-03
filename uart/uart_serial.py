@@ -14,6 +14,8 @@ from ctypes import sizeof
 from multiprocessing import shared_memory
 import numpy as np
 import time
+import psutil
+import os
 
 
 class UARTCommunication:
@@ -42,11 +44,15 @@ class UARTCommunication:
         self.comm_state: CommState = CommState.SYNC
         self.shutdown_transport: bool = False
         self.controller = PidControl()
-        # self.counter = 0  # Test communication timeout
-        self.max_reaction_time = 0.018 # a bit less then the raspberry timeout
+        self.counter = 0  # Test communication timeout
+        self.max_reaction_time = 0.015 # a bit less then the raspberry timeout
 
 
     def communicate(self, shm_name, lock):
+        p = psutil.Process()
+        p.cpu_affinity([CPU_CORE_UART])
+        os.sched_setscheduler(0, os.SCHED_FIFO, os.sched_param(RT_PRIORITY))
+
         if shm_name is not None:
             self.shm = shared_memory.SharedMemory(name=shm_name)
             self.lock = lock
@@ -345,7 +351,8 @@ class UARTCommunication:
                     ### Test communication timeout
                     # self.counter += 1
                     # if 500 < self.counter <= 510:
-                    #     time.sleep(0.022)
+                    # if self.counter == 500:
+                        # time.sleep(0.022)
                     ###
 
                     data_in = np.zeros(ForwardPacketHandler.packet_size)
