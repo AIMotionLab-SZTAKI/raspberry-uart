@@ -1,7 +1,7 @@
-from interfaces.packet_handler_interface import PacketHandlerInterface
+from raspberry_uart.interfaces.packet_handler_interface import PacketHandlerInterface
 import struct
 from typing import List, Optional
-from utils.debug import DEBUG_PRINT_TRAJECTORY
+from raspberry_uart.utils.debug import DEBUG_PRINT_TRAJECTORY
 
 
 class TrajectoryPacketHandler(PacketHandlerInterface):

@@ -1,5 +1,5 @@
 from ctypes import Structure, c_byte, sizeof
-from utils.config import MAX_PAYLOAD_LENGTH
+from raspberry_uart.utils.config import MAX_PAYLOAD_LENGTH
 
 """
 class UARTPacket(Structure):

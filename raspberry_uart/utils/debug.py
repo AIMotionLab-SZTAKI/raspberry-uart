@@ -1,5 +1,5 @@
 from typing import List
-from datatypes.stabilizer_types import *
+from raspberry_uart.datatypes.stabilizer_types import *
 
 def DEBUG_PRINT_CONTROL(thrust: float = None, state: State_t = None) -> None:
     if thrust is None or state is None:

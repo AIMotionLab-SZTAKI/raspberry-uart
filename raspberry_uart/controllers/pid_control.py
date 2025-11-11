@@ -1,8 +1,8 @@
 # PID attitude rate control for quadcopters
 
 import numpy as np
-from controllers.pid_params import *
-from datatypes.stabilizer_types import State_t, Attitude_t, Setpoint_t, Velocity_t
+from raspberry_uart.controllers.pid_params import *
+from raspberry_uart.datatypes.stabilizer_types import State_t, Attitude_t, Setpoint_t, Velocity_t
 
 DEFAULT_PID_INTEGRATION_LIMIT = 5000.0
 DEFAULT_PID_OUTPUT_LIMIT = None

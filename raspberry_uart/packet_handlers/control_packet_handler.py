@@ -1,8 +1,8 @@
-from interfaces.packet_handler_interface import PacketHandlerInterface
-from datatypes.stabilizer_types import *
+from raspberry_uart.interfaces.packet_handler_interface import PacketHandlerInterface
+from raspberry_uart.datatypes.stabilizer_types import *
 import struct
 from typing import Optional, Tuple
-from utils.debug import DEBUG_PRINT_CONTROL
+from raspberry_uart.utils.debug import DEBUG_PRINT_CONTROL
 
 class ControlPacketHandler(PacketHandlerInterface):
 

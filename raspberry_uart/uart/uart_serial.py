@@ -1,15 +1,15 @@
 import serial
 import struct
-from datatypes.stabilizer_types import *
+from raspberry_uart.datatypes.stabilizer_types import *
 from typing import Tuple, Optional, Union
-from datatypes.communication_packets import create_uart_packet, MAX_PAYLOAD_LENGTH
+from raspberry_uart.datatypes.communication_packets import create_uart_packet, MAX_PAYLOAD_LENGTH
 import traceback
-from utils.util import CommState, ServiceType, ErrorFlag, ControlFlag, current_milli_time
-from utils.config import *
-from packet_handlers.control_packet_handler import ControlPacketHandler
-from packet_handlers.trajectory_packet_handler import TrajectoryPacketHandler
-from packet_handlers.forward_packet_handler import ForwardPacketHandler
-from controllers.pid_control import PidControl
+from raspberry_uart.utils.util import CommState, ServiceType, ErrorFlag, ControlFlag, current_milli_time
+from raspberry_uart.utils.config import *
+from raspberry_uart.packet_handlers.control_packet_handler import ControlPacketHandler
+from raspberry_uart.packet_handlers.trajectory_packet_handler import TrajectoryPacketHandler
+from raspberry_uart.packet_handlers.forward_packet_handler import ForwardPacketHandler
+from raspberry_uart.controllers.pid_control import PidControl
 from ctypes import sizeof
 from multiprocessing import shared_memory
 import numpy as np

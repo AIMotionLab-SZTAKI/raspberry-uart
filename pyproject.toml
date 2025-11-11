@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "raspberry_uart"
+version = "0.0.1"
+authors = [
+    { name="Peter Antal", email="antalpeter@sztaki.hu" },
+]
+readme = "README.md"
+dependencies = [
+    "pyusb",
+    "pyserial",
+    "numpy",
+    "psutil"
+]
+
+[tool.setuptools]
+py-modules = []
+include-package-data = true
+packages = ["raspberry_uart"]

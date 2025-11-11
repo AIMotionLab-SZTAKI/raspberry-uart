@@ -1,4 +1,4 @@
-from interfaces.packet_handler_interface import PacketHandlerInterface
+from raspberry_uart.interfaces.packet_handler_interface import PacketHandlerInterface
 import struct
 from typing import List, Optional
 import json

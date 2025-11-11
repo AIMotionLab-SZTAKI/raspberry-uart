@@ -1,10 +1,10 @@
 import serial
 import struct
 import time
-from datatypes.stabilizer_types import *
+from raspberry_uart.datatypes.stabilizer_types import *
 from typing import Tuple, Optional, List
 from enum import Enum
-from datatypes.communication_packets import UARTPacket, MAX_PAYLOAD_LENGTH
+from raspberry_uart.datatypes.communication_packets import UARTPacket, MAX_PAYLOAD_LENGTH
 import traceback
 
 
